@@ -1,21 +1,32 @@
 import os
 
-# Comment out Azure import for now
-# from azure.storage.blob import BlobServiceClient
+def upload_to_blob(content: str, blob_name: str, metadata: dict, config: dict):
+    """
+    For local dev, saves content as a markdown file and metadata as a .meta.txt file
+    preserving folder structure under ./output.
 
-def upload_to_blob(content, blob_name, metadata, config):
+    Args:
+        content (str): Markdown content to save
+        blob_name (str): Path including folders + filename (e.g. "Team/Doc.md")
+        metadata (dict): Metadata dictionary
+        config (dict): Config dictionary (not used here but kept for signature)
+    """
     output_dir = "./output"
-    os.makedirs(output_dir, exist_ok=True)
+    full_path = os.path.join(output_dir, blob_name)
 
-    # Write to local file instead of uploading
-    local_path = os.path.join(output_dir, blob_name)
-    with open(local_path, "w", encoding="utf-8") as file:
+    # Create intermediate directories if not exist
+    folder = os.path.dirname(full_path)
+    if folder and not os.path.exists(folder):
+        os.makedirs(folder)
+
+    # Write markdown content
+    with open(full_path, "w", encoding="utf-8") as file:
         file.write(content)
 
-    # Log metadata as a JSON-style file
-    meta_path = os.path.join(output_dir, f"{blob_name}.meta.txt")
+    # Write metadata alongside markdown file
+    meta_path = full_path + ".meta.txt"
     with open(meta_path, "w", encoding="utf-8") as metafile:
         for key, value in metadata.items():
             metafile.write(f"{key}: {value}\n")
 
-    print(f"[DEV MODE] Stored '{blob_name}' locally at '{local_path}' with metadata: {metadata}")
+    print(f"[DEV MODE] Stored '{blob_name}' locally at '{full_path}' with metadata: {metadata}")
