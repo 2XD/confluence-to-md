@@ -20,7 +20,7 @@ source .venv/bin/activate
 
 curl -X POST http://localhost:7071/api/convert \
      -H "Content-Type: application/json" \
-     -d '{"space_key": "INFRA"}'
+     -d '{"space_key": "whateverthespaceiscalled"}'
 
 Have tested with python 3.13 and it did not work, but 3.9.x should be fully compatible.
 To do : make sure when the program is re-run through functions, it does not re-do the entire process aka do not duplicate data
