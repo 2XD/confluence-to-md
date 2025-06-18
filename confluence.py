@@ -5,7 +5,7 @@ from azure_blob import upload_to_blob
 from datetime import datetime
 
 def get_page_content(page_id, config):
-    url = f"{config['CONFLUENCE_BASE_URL']}/{page_id}"
+    url = f"{config['CONFLUENCE_BASE_URL']}/rest/api/content/{page_id}"
     headers = {
         'Authorization': f"Bearer {config['CONFLUENCE_API_TOKEN']}",
         'Accept': 'application/json'
@@ -22,7 +22,7 @@ def get_page_content(page_id, config):
     }
 
 def get_child_pages(page_id, config):
-    url = f"{config['CONFLUENCE_BASE_URL']}/{page_id}/child/page"
+    url = f"{config['CONFLUENCE_BASE_URL']}/rest/api/content/{page_id}/child/page"
     headers = {
         'Authorization': f"Bearer {config['CONFLUENCE_API_TOKEN']}",
         'Accept': 'application/json'
@@ -30,6 +30,18 @@ def get_child_pages(page_id, config):
     response = requests.get(url, headers=headers, verify=False)
     response.raise_for_status()
     return response.json().get('results', [])
+
+def get_space_homepage(space_key, config):
+    url = f"{config['CONFLUENCE_BASE_URL']}/rest/api/space/{space_key}?expand=homepage"
+    headers = {
+        'Authorization': f"Bearer {config['CONFLUENCE_API_TOKEN']}",
+        'Accept': 'application/json'
+    }
+    response = requests.get(url, headers=headers, verify=False)
+    response.raise_for_status()
+    data = response.json()
+    homepage = data.get('homepage', {})
+    return homepage.get('id')
 
 def process_page(page_id, config, path=''):
     page = get_page_content(page_id, config)
@@ -39,7 +51,7 @@ def process_page(page_id, config, path=''):
 
     metadata = {
         'created_date': datetime.fromisoformat(page["created"].replace("Z", "+00:00")).strftime('%Y-%m-%d'),
-        'source_page': f"{config['CONFLUENCE_BASE_URL']}/{page_id}"
+        'source_page': f"{config['CONFLUENCE_BASE_URL']}/rest/api/content/{page_id}"
     }
 
     upload_to_blob(md_content, blob_path, metadata, config)
